@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cilium
+  namespace: argocd
+  labels:
+    name: cilium
+spec:
+  project: development
+
+  source:
+    repoURL: https://helm.cilium.io/
+    targetRevision: 1.14.5
+    path: install/kubernetes/cilium
+    chart: cilium
+    helm:
+      valuesObject:
+        ingressController:
+          enabled: true
+
+  # Destination cluster and namespace to deploy the application
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+
+  # Sync policy
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s 
+        factor: 2 
+        maxDuration: 3m 
